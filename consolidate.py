@@ -1,53 +1,20 @@
-{% extends "layout.html" %} {% block title %}Pallet planner{% endblock %} {%
-block body %}
+import csv
 
-<div class="container">
-  <div class="row">
-    <div class="col">
-      <h1>Pallet planner</h1>
-      <hr />
-      <form action="/upload-load" method="POST" enctype="multipart/form-data">
-        <div class="form_group">
-          <label style="font-size: 1em"
-            >What is the load number you would like to plan? (must have 6
-            digits)</label
-          ><br />
-          <br />
-          <input type="text" size="6" id="load_number" name="load_number" />
-          <br />
-          <br />
-          <label style="font-size: 1em"
-            >Add csv file with load which needs planing pallets: <br />(file
-            needs to be called <span class="inside">"load.csv"</span>, must have
-            2 columns without headers: 1st column SKU, 2nd column
-            quantity)</label
-          >
-          <br />
-          <br />
-          <div class="custom-file">
-            <input
-              type="file"
-              class="custom-file-input"
-              name="load"
-              id="load"
-            />
-            <br />
-            <br />
-            <label>Do you want to consolidate orders?</label>
-            <input
-              type="checkbox"
-              name="consolidate"
-              id="consolidate"
-              checked
-            /><br />
-            <br />
-            <label class="custom-file-label"></label>
-          </div>
-        </div>
-        <br />
-        <button type="submit" class="btn btn-primary">Upload load</button>
-      </form>
-    </div>
-  </div>
-</div>
-{% endblock %}
+
+def consolidate(filename):
+    full_list = {}
+
+    with open(filename, "r") as file:
+        line = csv.reader(file)
+        for product in line:
+            if product[0] == "":
+                continue
+            elif product[0] not in full_list:
+                full_list[product[0]] = product[1]
+            else:
+                quantity = int(full_list.get(product[0])) + int(product[1])
+                full_list[product[0]] = quantity
+
+    with open(filename, "w") as file:
+        for key in full_list.keys():
+            file.write("%s,%s\n" % (key, full_list[key]))
